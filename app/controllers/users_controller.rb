@@ -16,6 +16,19 @@ class UsersController < ApplicationController
         end
     end
 
+    #function for login in which a session id will create 
+    def login
+        # user = User.find_by([email: params[:email]])
+        user = User.find_by(email: params[:email], password: params[:password])
+        if user
+            token = SecureRandom.hex(16)
+            user.update(session_id: token)
+            render json: { token: token, user: user }
+        else
+            render json: { error: "Invalid email or password" }, status: :unauthorized
+        end
+    end
+
     #Show all Users
     def getAllUser
         @users = User.all 
@@ -38,7 +51,7 @@ class UsersController < ApplicationController
     def delete
         user = User.find_by(id: params[:id])
 
-        if user&.destroy()
+        if user&.destroy()  
             render json: { message: "User deleted successfully", user: user }
         else
             render json: { error: user&.errors&.full_messages || "User not found" }, status: :unprocessable_entity
